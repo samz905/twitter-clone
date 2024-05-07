@@ -1,39 +1,46 @@
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { User, createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import Image from "next/image";
 import { revalidatePath } from "next/cache";
 
-export default function NewTweet() {
+export default function NewTweet({ user }: { user: User }) {
     const insertTweet = async (formData: FormData) => {
         "use server";
         const tweet = String(formData.get("tweet"));
         const supabase = createServerActionClient<Database>({ cookies });
-        const { 
-            data: { user } 
-        } = await supabase.auth.getUser();
-        if (user) {
-            await supabase.from("tweets").insert([{ tweet: tweet, user_id: user.id }]);
 
-            // Revalidate the cache with new tweets fetched from the db to show them in real-time without needing to refresh the page
-            revalidatePath("/");
-        }
+        await supabase.from("tweets").insert([{ tweet: tweet, user_id: user.id }]);
+
+        // Revalidate the cache with new tweets fetched from the db to show them in real-time without needing to refresh the page
+        revalidatePath("/");
     };
-    
+
     return (
-        <div>
-            <form action={insertTweet} className="p-4 max-w-xl mx-auto">
-                <textarea 
-                    placeholder="What's happening?" 
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        <form className="border border-gray-800 border-t-0 py-4 px-4" action={insertTweet}>
+            <div className="flex">
+                <div className="h-12 w-12">
+                <Image
+                    src={user.user_metadata.avatar_url}
+                    alt="user avatar"
+                    width={48}
+                    height={48}
+                    className="rounded-full"
+                />
+                </div>
+                <input
                     name="tweet"
-                ></textarea>
+                    className="bg-inherit flex-1 ml-4 mb-4 text-2xl leading-loose placeholder-gray-500 px-2"
+                    placeholder="What is happening?!"
+                />
+            </div>
+            <div className="flex justify-end">
                 <button 
-                    type="submit" 
-                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 hover:bg-blue-600 rounded-full "
                 >
-                    Tweet!
+                    Tweet
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     );
 }
-

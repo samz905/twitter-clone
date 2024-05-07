@@ -53,10 +53,10 @@ export default function AuthButtonClient({
     return session ? (
         <button onClick={handleSignOut}>Sign out</button>
     ) : (
-        <>
-            <button onClick={handleSignInWithGithub}>Sign in with Github</button>
-            <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
-        </>
+        <div className="flex flex-col space-y-2 items-center justify-center w-full">
+            <button className="text-sm bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-colors" onClick={handleSignInWithGithub}>Sign in with Github</button>
+            <button className="text-sm bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors" onClick={handleSignInWithGoogle}>Sign in with Google</button>
+        </div>
     );
 }
 

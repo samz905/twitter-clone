@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import AuthButtonServer from "./components/auth-button-server";
 import { redirect } from "next/navigation";
 import NewTweet from "./components/new-tweet";
-import Likes from "./components/likes";
+import Tweets from "./components/tweets";
 
 export default async function Home() {
   const supabase = createServerComponentClient<Database>({ cookies });
@@ -23,7 +23,8 @@ export default async function Home() {
   // The user is then redirected back to the home page where the below line fetches tweets from the db for authenticated users to view
   const { data } = await supabase
     .from("tweets")
-    .select("*, author: profiles(*), likes(user_id)");
+    .select("*, author: profiles(*), likes(user_id)")
+    .order("created_at", { ascending: false });
 
   const tweets =
     data?.map((tweet) => ({
@@ -36,18 +37,13 @@ export default async function Home() {
     })) ?? [];
 
   return (
-    <>
-      <AuthButtonServer />
-      <NewTweet />
-      {tweets?.map((tweet) => (
-        <div key={tweet.id}>
-          <p>
-            {tweet.author.name} {tweet.author.email}
-          </p>
-          <p>{tweet.tweet}</p>
-          <Likes tweet={tweet} />
-        </div>
-      ))}
-    </>
+    <div className="w-full max-w-xl mx-auto">
+      <div className="flex justify-between px-4 py-6 border border-gray-800 border-t-0">
+        <h1 className="text-xl font-bold">Home</h1>
+        <AuthButtonServer />
+      </div>
+      <NewTweet user={session.user} />
+      <Tweets tweets={tweets} />
+    </div>
   );
 }
